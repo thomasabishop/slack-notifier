@@ -1,0 +1,17 @@
+{
+  "name": "slack-notifier",
+  "version": "1.0.0",
+  "description": "Send messages via Slack webhooks for local processes",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Thomas Bishop",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.8"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5"
+  }
+}
