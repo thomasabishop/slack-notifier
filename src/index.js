@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 
 const process = require("process")
+const { exec } = require("child_process")
 const axios = require("axios")
 
-const slackNotifier = async (channel, { message = "", block = null } = {}) => {
+const notificationSound =
+  "mpv /home/thomas/dotfiles/gruvbox-95/sounds/st-notification.mp3"
+
+const slackNotifier = async (channel, message, blocks) => {
   try {
     const webhooks = {
       test: process.env.SLACK_WEBHOOK_TEST,
@@ -19,22 +23,30 @@ const slackNotifier = async (channel, { message = "", block = null } = {}) => {
 
     if (message) {
       payload = { text: message, channel: channel }
-    } else if (block) {
-      payload = { blocks: block, channel: channel } // Ensure block is an array of structured data for Slack blocks
-    } else {
-      throw new Error("Either a message or a block must be provided.")
     }
 
-    await axios.post(webhookUrl, payload)
-    console.log(`Message successfully sent to ${channel}`)
+    if (blocks) {
+      payload = { blocks: blocks, channel: channel } // Ensure block is an array of structured data for Slack blocks
+    }
+
+    const response = await axios.post(webhookUrl, payload)
+    if (response.status === 200) {
+      exec(notificationSound)
+      console.info(`Message successfully sent to ${channel}`)
+    } else {
+      console.error(
+        `Slack API returned non-200 response: ${response.status}`,
+        response.data
+      )
+    }
   } catch (error) {
     console.error(`Failed to send message to ${channel}:`, error)
   }
 }
 
 if (require.main === module) {
-  const [, , channel, message] = process.argv
-  slackNotifier(channel, { message }).catch(console.error)
+  const [, , channel, message, blocks] = process.argv
+  slackNotifier(channel, message, blocks).catch(console.error)
 }
 
 module.exports = { slackNotifier }
